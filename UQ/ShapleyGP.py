@@ -21,7 +21,7 @@ from botorch.fit import fit_gpytorch_model
 # Latin Hypercube Sampling
 from smt.sampling_methods import LHS
 
-from GP import GPutils
+from UQGP.GP import GPutils
 
 torch.set_default_dtype(torch.float64)
 # torch.manual_seed(123)
