@@ -15,7 +15,7 @@ import gpytorch
 # BoTorch
 from botorch.fit import fit_gpytorch_model
 
-from GP import GPutils
+from UQGP.GP import GPutils
 
 
 def compute_univariate_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
