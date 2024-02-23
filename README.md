@@ -1,8 +1,9 @@
 # UQGP: Uncertainty Quantification based on Gaussian Process
 
-This package performs uncertainty quantification (UQ) based on the Gaussian process (GP) based surrogated model.
+This package performs uncertainty quantification (UQ) based on the Gaussian process (GP) based surrogate model.
 
 ## Getting Started
+
 This project involves two sub-modules:
 
 - `GP` folder contains Gaussian Process-related utilities based on `PyTorch`,
@@ -11,12 +12,11 @@ This project involves two sub-modules:
 the Sobol indices, the Shapley values, and the univariate effects.
 
 ## Prerequisites
-In this project, you depend on `Tensorflow`, `PyTorch`, `GPyTorch`, `BoTorch`, 
-`Hydra`, among others.
-We highly recommend creating a `virtualenv` and installing necessary packages
-within this environment.
 
-Although `Tensorflow` and `PyTorch` would cause several dependency problems, we advise to install the following versions or higher:
+In this project, you depend on `Tensorflow`, `PyTorch`, `GPyTorch`, `BoTorch`, `Hydra`, among others. We highly recommend creating a `virtualenv` and installing necessary packages within this environment.
+
+Although `Tensorflow` and `PyTorch` would cause several dependency problems, we advise installing the following versions or higher:
+
 ```bash
 tensorflow==2.3.0
 torch==2.0.1
@@ -26,24 +26,32 @@ hydra-core==1.3.1
 ```
 
 ## Installation
+
 Download from [here](https://github.com/takafusui/UQGP/) and install the package somewhere your `PYTHONPATH` is accessible.
 
 ## Directory structure
+
 This package is assumed to be used on top of the policy functions and tensorflow data directory from the DEQN package.
 
-The directory should be started from `USE_CONFIG_FROM_RUN` and should look like:
+The directory should be started from the DEQN base directory (typically it is `USE_CONFIG_FROM_RUN`) and should look like:
+
 ```bash
-USE_CONFIG_FROM_RUN
+DEQN_base_dir
+│
+├── ...
 ├── UQGPPreProcess.py
 ├── gen_simulate_QoIs_train.py
 ├── uq_gp_sobol.py
 ├── uq_gp_shapley.py
 ├── uq_gp_univariate.py
+├── uq_gp_err.py
 ├── plt_sobol_gp.py
 ├── plt_shapley_gp.py
 ├── plt_univariate_gp.py
+├── plt_err_gp.py
+├── ...
 │
-└── UQ/model_name/trainXYZ_LHS
+└── UQresults/model_name/trainXYZ_LHS
     │
     ├── sobol
     │   ├──figs
@@ -61,10 +69,15 @@ USE_CONFIG_FROM_RUN
     │
     └── QoI.csv
 ```
+
+Your `DEQN_base_dir` should be similar to this screenshot:
+
+![Directory](figs/dir.png)
+
 - `UQGPPreProcess.py` instantiates UQ analysis and stores common settings throughout the analysis. For instance, you can set the number of experimental design `N_train_X`, the model name `dir_name`, and the list of quantities of interest `QoIs_list`, among others.
-- `gen_simulate_QoIs_train.py` is used to generate the initial experimental design. The generated samples are stored in `UQ/model_name/trainXYZ_LHS` directory.
-    - `model_name` is defined in`UQGPPreProcess.py`. See the `dir_name` entity.
-    - In `trainXYZ_LHS`, `XYZ` refers to the number of initial experimental design. You set `XYZ` in the `N_train_X` entity in `.hydra/config.yaml`. For testing purposes, you select `XYZ` to a small number (let's say 10), but for actual computations, `XYZ` should be big enough (let's say 200) depending on your applications.
+- `gen_simulate_QoIs_train.py` is used to generate the initial experimental design. The generated samples are stored in `UQresults/model_name/trainXYZ_LHS` directory.
+  - `model_name` is defined in`UQGPPreProcess.py`. See the `dir_name` entity.
+  - In `trainXYZ_LHS`, `XYZ` refers to the number of initial experimental design. You set `XYZ` in the `N_train_X` entity in `.hydra/config.yaml`. For testing purposes, you select `XYZ` to a small number (let's say 10), but for actual computations, `XYZ` should be big enough (let's say 200) depending on your applications.
 - `sobol` directory includes the final figures (`pdf`) and the first-order Sobol indices in a `csv` format.
 - `shapley` directory includes the final figures (`pdf`) and the Shapley values in a `csv` format.
 - `univariate` directory includes the final figures (`pdf`) and the univariate effects in a `csv` format.
