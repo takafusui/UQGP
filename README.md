@@ -131,3 +131,12 @@ Under construction...
 
 ## Bayesian active learning
 Under construction...
+
+## Tail learning
+In `post_process_learn.py`, we also compute
+1. The prior distribution of ECS as like Roe and Baker (2007). Search around `l.551`.
+2. The posterior distribution of ECS as like Kelly and Tan (2015). Search around `l. 578`.
+3. The distribution of ECS implied by the mean of posterior as like Kelly and Tan (2015). Search around `l.604`.
+4. Expected learning time to complete tail-learning as like Kelly and Tan (2015). Search around `l.650`.
+
+Note that all figures in `pdf` and tail learning time in `csv` are stored in your output directory (the same directory where you saved the distribution plots, etc.).
