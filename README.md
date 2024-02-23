@@ -139,4 +139,9 @@ In `post_process_learn.py`, we also compute
 3. The distribution of ECS implied by the mean of posterior as like Kelly and Tan (2015). Search around `l.604`.
 4. Expected learning time to complete tail-learning as like Kelly and Tan (2015). Search around `l.650`.
 
+To simulate the economy, we assume the true climate feedback parameter `truef`. Execute `post_process_learn.py` by adding your `truef` parameter such as `truef=0.65`
+```bash
+export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_dean_data && python post_process_learn.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.truef=0.65
+```
+
 Note that all figures in `pdf` and tail learning time in `csv` are stored in your output directory (the same directory where you saved the distribution plots, etc.).
