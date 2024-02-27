@@ -17,7 +17,7 @@ from sklearn.model_selection import LeaveOneOut
 # Pre-processing
 from sklearn import preprocessing
 
-import GPutils
+from UQGP.GP import GPutils
 
 torch_dtype = torch.double
 
@@ -99,7 +99,7 @@ def mean_abs_err_GP(gp, test_X, test_y):
 
 
 def Q2_GP(gp, test_X, test_y):
-    """Compute the predictivity coefficient Q2.
+    """Compute the predictively coefficient Q2.
 
     In practical situations, a metamodel with a predictivity lower than 0.7 is
     often considered as a poor approximation

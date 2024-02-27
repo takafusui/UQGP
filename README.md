@@ -1,6 +1,10 @@
 # UQGP: Uncertainty Quantification based on Gaussian Process
 
-This package performs uncertainty quantification (UQ) based on the Gaussian process (GP) based surrogate model.
+This package performs uncertainty quantification (UQ) based on the Gaussian process (GP) based surrogate model. To quantify parametric uncertainty in a mathematical model $\mathcal{M}\left( \cdot \right)$, we compute the following three metrics where we utilize the GP-based metamodel to speed-up overall computations:
+
+- First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008)
+- Shapley values following [Owen (2014)](https://doi.org/10.1137/130936233), [Song et al. (2016)](https://doi.org/10.1137/15M1048070) and [Goda 2021](https://doi.org/10.1016/j.ress.2021.107702)
+- Univariate effects following [Younes et al. (2013)](https://doi.org/10.2136/vzj2011.0150)
 
 ## Getting Started
 
@@ -55,17 +59,17 @@ DEQN_base_dir
     │
     ├── sobol
     │   ├──figs
-    │   └──S1st_pred_QoI.csv 
+    │   └──S1st_pred_QoI.csv
     │
     ├── shapley
     │   ├──figs
     │   ├──shapley_exact_QoI.csv
-    │   └──shapley_approx_QoI.csv 
+    │   └──shapley_approx_QoI.csv
     │
     ├── univariate
     │   ├──figs
     │   ├──train_X_bounds.csv
-    │   └──uni_pred_QoI.csv 
+    │   └──uni_pred_QoI.csv
     │
     └── QoI.csv
 ```
@@ -84,17 +88,66 @@ Your `DEQN_base_dir` should be similar to this screenshot:
 - `QoI.csv` is the outcome of the initial experimental design. You set the QoIs to be investigated in `UQGPPreProcess`. See `QoIs_list`.
 
 ## Usage
-### Experimental design
+
+### Tests on the analytical functions
+
+These tests are standalone and do not depend on the outputs from the DEQN library.
+
+#### Predictivity coefficient $Q_{2}$
+
+Given the true mathematical model $\mathcal{M}\left( \cdot \right)$, we construct a GP surrogate model $\hat{\mathcal{M}}\left( \cdot \right)$ fitted on the given training data $\left( X, y\right)$ of size $n$. Typically, $X$ is drawn from the Latin Hypercube Sampling (: LHS), and $y$ is the outcome of the test function evaluated on each $X$. To evaluate the accuracy of $\hat{\mathcal{M}}\left( \cdot \right)$, we apply the predictivity coefficient $Q_{2}$
+
+```math
+Q_2 \left( y, \hat{y} \right) = 1 - \frac{\sum_{i=1}^{n_{\mathrm{test}}} \left( y_{i} - \hat{y}_{i} \right)^{2}}{\sum_{i=1}^{n_{\mathrm{test}}} \left( \overline{y} - y_{i}\right)^{2}},
+
+```
+
+where $y_{i}$ is the true test observation, $\overline{y}$ is the mean of the true test observations, and $\hat{y}_{i}$ is the GP predicted mean values. We evaluate the predictivity coefficient $Q_{2}$ on the test data of size, for example, $10,000$. In practical applications, a GP model with $Q_{2} > 0.7$ is often considered a good approximation of the true model.
+
+#### Sobol' g-function
+
+We compute the first-order Sobol' indices for the Sobol' g-function that is defined for $d$ inputs $\left( X_{1}, \cdots, X_{d}\right)$ uniformly distributed on $\left[ 0, 1 \right]^{d}$
+
+```math
+g\left( X_{1}, \cdots, X_{d} \right) = \prod_{i=1}^{d}\frac{\left| 4X_{i} - 2 \right| + a_{i}}{1 + a_{i}}, a_{i} \geq 0
+```
+
+Following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008), we choose $d=5$ and $a_{i} = i$ for $i=1, \cdots, 5$. With this particular setting, the first-order Sobol' indices are analytically given, and approximately $S_{1} =0.48, S_{2} = 0.21, S_{3} = 0.12, S_4 = 0.08, S_5 = 0.05$.
+
+#### Ishigami function
+
+We consider another analytical function, the Ishigami function, where the three input random variables $\left( X_{1}, X_{2}, X_{3} \right)$ follow uniform distribution on $\left[ -\pi, \pi \right]$
+
+```math
+f\left( X_{1}, X_{2}, X_{3} \right) = \sin X_{1} + 7 \sin^{2}X_{2} + 0.1 X^{4}_{3} \sin X_{1}
+```
+
+##### First-order Sobol' indices
+
+The analytical values of the first-order Sobol' indices are known and they are $S_{1} = 0.3139, S_{2}=0.4424, S_{3}=0$.
+
+##### Shapley values
+
+The left figure is cited from [Goda 2021, Fig. 1](https://doi.org/10.1016/j.ress.2021.107702), whereas the right figure summarizes our computation.
+
+![Gonda](test/figs/ishigami_shapley_gonda.png){width=50%}![Shapley](test/figs/ishigami_shapley.png){width=50%}
+
+### Use with the DEQN library
+
+#### Experimental design
+
 To generate experimental design, execute:
 
 ```bash
 export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python gen_simulate_QoIs_train.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.N_train_X=XYZ
 ```
+
 Here you override `N_train_X` by setting `constants.constants.N_train_X=XYZ`.
 
 The tentative results are stored in the `UQ` directory as a `csv` format. Once sampling is over, the results move to `UQ/model_name/trainXYZ_LHS` directory.
 
-### First-order Sobol indices
+#### First-order Sobol indices
+
 To compute the first-order Sobol indices based on GP, execute:
 
 ```bash
@@ -104,12 +157,15 @@ export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python uq_gp_sobol.p
 The results are stored in `UQ/model_name/trainXYZ_LHS/sobol` as `csv` data.
 
 To plot the first-order Sobol indices, execute:
+
 ```bash
 export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python plt_sobol_gp.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.N_train_X=XYZ
 ```
+
 The figures are stored in `UQ/model_name/trainXYZ_LHS/sobol/figs`.
 
-### Shapley values
+#### Shapley values
+
 To compute the Shapley values based on GP, execute:
 
 ```bash
@@ -119,12 +175,15 @@ export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python uq_gp_shapley
 The results are stored in `UQ/model_name/trainXYZ_LHS/shapley` as `csv` data.
 
 To plot the Shapley values, execute:
+
 ```bash
 export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python plt_shapley_gp.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.N_train_X=XYZ
 ```
+
 The figures are stored in `UQ/model_name/trainXYZ_LHS/shapley/figs`.
 
-### Univariate effects
+#### Univariate effects
+
 To compute the univariate effects based on GP, execute:
 
 ```bash
@@ -134,25 +193,32 @@ export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python uq_gp_univari
 The results are stored in `UQ/model_name/trainXYZ_LHS/univariate` as `csv` data.
 
 To plot the univariate effects, execute:
+
 ```bash
 export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python plt_univariate_gp.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.N_train_X=XYZ
 ```
+
 The figures are stored in `UQ/model_name/trainXYZ_LHS/univariate/figs`.
 
 ## LOO error analysis
+
 Under construction...
 
 ## Bayesian active learning
+
 Under construction...
 
 ## Tail learning
+
 In `post_process_learn.py`, we also compute
+
 1. The prior distribution of ECS as like Roe and Baker (2007). Search around `l.551`.
 2. The posterior distribution of ECS as like Kelly and Tan (2015). Search around `l. 578`.
 3. The distribution of ECS implied by the mean of posterior as like Kelly and Tan (2015). Search around `l.604`.
 4. Expected learning time to complete tail-learning as like Kelly and Tan (2015). Search around `l.650`.
 
 To simulate the economy, we assume the true climate feedback parameter `truef`. Execute `post_process_learn.py` by adding your `truef` parameter such as `truef=0.65`
+
 ```bash
 export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_dean_data && python post_process_learn.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.truef=0.65
 ```
