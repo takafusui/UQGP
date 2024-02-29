@@ -11,7 +11,7 @@ The first-order Sobol' indices and the Shapley values
 import numpy as np
 from smt.sampling_methods import Random, LHS
 import torch
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
@@ -40,7 +40,7 @@ plt.rcParams["legend.title_fontsize"] = 14
 # --------------------------------------------------------------------------- #
 # Training data
 # --------------------------------------------------------------------------- #
-N_train_X = 200
+N_train_X = 256
 col_header = [r'$x_1$', r'$x_2$', r'$x_3$']
 N_inputs = len(col_header)
 Xlimits = np.tile([-np.pi, np.pi], (N_inputs, 1))
@@ -51,8 +51,8 @@ train_X_bounds = torch.from_numpy(
 sampler = LHS(xlimits=Xlimits)
 train_X = torch.from_numpy(sampler(N_train_X))
 
-TestFunc = TestFunc(train_X)
-train_y = TestFunc.ishigami_func(train_X)
+testfunc = TestFunc(train_X)
+train_y = testfunc.ishigami_func(train_X)
 
 # --------------------------------------------------------------------------- #
 # Predictivity coefficient Q2
@@ -60,13 +60,13 @@ train_y = TestFunc.ishigami_func(train_X)
 # Initialize a GP model
 mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
 # Train the GP model based on train_X and train_y
-fit_gpytorch_model(mll)  # Using BoTorch's fitting routine
+fit_gpytorch_mll(mll)  # Using BoTorch's fitting routine
 
 # Test sample
 N_test_X = 10000
 sampler_LHS = LHS(xlimits=Xlimits)
 test_X = torch.from_numpy(sampler_LHS(N_test_X))
-test_y = TestFunc.ishigami_func(test_X)
+test_y = testfunc.ishigami_func(test_X)
 
 Q2 = ComputeErrorGP.Q2_GP(gp, test_X, test_y)
 print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
@@ -75,8 +75,8 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 # --------------------------------------------------------------------------- #
 # First-order Sobol' indices using prediction only
 # --------------------------------------------------------------------------- #
-N_Xi = 500
-""" S1st_pred = SobolGP.compute_S1st_pred(
+N_Xi = 1000
+S1st_pred = SobolGP.compute_S1st_pred(
     train_X, train_y, train_X_bounds, test_X, N_Xi)
 
 print(r"First-order Sobol' indices are:")
@@ -99,8 +99,9 @@ ax.set_xticklabels(col_header)
 ax.set_ylabel(r"$S_{1}$")
 ax.legend()
 plt.savefig('figs/ishigami_sobol.png', bbox_inches="tight")
-plt.close() """
+plt.close()
 
+# import ipdb; ipdb.set_trace()
 
 # --------------------------------------------------------------------------- #
 # Shapley values

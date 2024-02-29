@@ -1,9 +1,9 @@
-# UQGP: Uncertainty Quantification based on Gaussian Process
+# UQGP: Uncertainty Quantification based on the Gaussian Process
 
-This package performs uncertainty quantification (UQ) based on the Gaussian process (GP) based surrogate model. To quantify parametric uncertainty in a mathematical model $\mathcal{M}\left( \cdot \right)$, we compute the following three metrics where we utilize the GP-based metamodel to speed-up overall computations:
+This package performs uncertainty quantification (UQ) based on the Gaussian process (GP). To quantify parametric uncertainty in a mathematical model $\mathcal{M}\left( \cdot \right)$, we compute the following three metrics where we utilize the GP-based surrogate to speed up overall computations:
 
 - First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008)
-- Shapley values following [Owen (2014)](https://doi.org/10.1137/130936233), [Song et al. (2016)](https://doi.org/10.1137/15M1048070) and [Goda 2021](https://doi.org/10.1016/j.ress.2021.107702)
+- Shapley values following [Owen (2014)](https://doi.org/10.1137/130936233), [Song et al. (2016)](https://doi.org/10.1137/15M1048070), and [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
 - Univariate effects following [Younes et al. (2013)](https://doi.org/10.2136/vzj2011.0150)
 
 ## Getting Started
@@ -19,7 +19,7 @@ the Sobol indices, the Shapley values, and the univariate effects.
 
 In this project, you depend on `Tensorflow`, `PyTorch`, `GPyTorch`, `BoTorch`, `Hydra`, among others. We highly recommend creating a `virtualenv` and installing necessary packages within this environment.
 
-Although `Tensorflow` and `PyTorch` would cause several dependency problems, we advise installing the following versions or higher:
+Although `Tensorflow` and `PyTorch` would cause several dependency problems, we advise installing the following versions or higher that would work:
 
 ```bash
 tensorflow==2.3.0
@@ -35,9 +35,9 @@ Download from [here](https://github.com/takafusui/UQGP/) and install the package
 
 ## Directory structure
 
-This package is assumed to be used on top of the policy functions and tensorflow data directory from the DEQN package.
+This package is assumed to be used on top of the policy functions and `tensorflow` data directory from the DEQN package.
 
-The directory should be started from the DEQN base directory (typically it is `USE_CONFIG_FROM_RUN`) and should look like:
+The directory should be started from the DEQN base directory (typically, it is `USE_CONFIG_FROM_RUN`) and should look like the below:
 
 ```bash
 DEQN_base_dir
@@ -81,7 +81,7 @@ Your `DEQN_base_dir` should be similar to this screenshot:
 - `UQGPPreProcess.py` instantiates UQ analysis and stores common settings throughout the analysis. For instance, you can set the number of experimental design `N_train_X`, the model name `dir_name`, and the list of quantities of interest `QoIs_list`, among others.
 - `gen_simulate_QoIs_train.py` is used to generate the initial experimental design. The generated samples are stored in `UQresults/model_name/trainXYZ_LHS` directory.
   - `model_name` is defined in`UQGPPreProcess.py`. See the `dir_name` entity.
-  - In `trainXYZ_LHS`, `XYZ` refers to the number of initial experimental design. You set `XYZ` in the `N_train_X` entity in `.hydra/config.yaml`. For testing purposes, you select `XYZ` to a small number (let's say 10), but for actual computations, `XYZ` should be big enough (let's say 200) depending on your applications.
+  - In `trainXYZ_LHS`, `XYZ` refers to the number of initial experimental designs. You set `XYZ` in the `N_train_X` entity in `.hydra/config.yaml`. For testing purposes, you select `XYZ` to a small number (let's say 10), but for actual computations, `XYZ` should be big enough (let's say 200) depending on your applications.
 - `sobol` directory includes the final figures (`pdf`) and the first-order Sobol indices in a `csv` format.
 - `shapley` directory includes the final figures (`pdf`) and the Shapley values in a `csv` format.
 - `univariate` directory includes the final figures (`pdf`) and the univariate effects in a `csv` format.
@@ -91,7 +91,7 @@ Your `DEQN_base_dir` should be similar to this screenshot:
 
 ### Tests on the analytical functions
 
-These tests are standalone and do not depend on the outputs from the DEQN library.
+These tests are standalone and do not depend on the outputs from the DEQN library. We closely follow [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008) and [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702).
 
 #### Predictivity coefficient $Q_{2}$
 
@@ -112,7 +112,20 @@ We compute the first-order Sobol' indices for the Sobol' g-function that is defi
 g\left( X_{1}, \cdots, X_{d} \right) = \prod_{i=1}^{d}\frac{\left| 4X_{i} - 2 \right| + a_{i}}{1 + a_{i}}, a_{i} \geq 0
 ```
 
+##### First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008)
+
 Following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008), we choose $d=5$ and $a_{i} = i$ for $i=1, \cdots, 5$. With this particular setting, the first-order Sobol' indices are analytically given, and approximately $S_{1} =0.48, S_{2} = 0.21, S_{3} = 0.12, S_4 = 0.08, S_5 = 0.05$.
+
+Our approximation results using GP are summarized below. Since GP modeling is a stochastic process, we should iterate to estimate our estimates' mean and standard deviation.
+
+![gfunc_sobol](test/figs/gfunc_sobol.png){width=40%}
+
+##### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
+
+Following [Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702), we choose $d=10$ and $a_{i} = i - 1$ for $i=1, \cdots, 10$.
+[Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the first-order Sobol' indices (Main effect) and the Shapley values of the Sobol' g-function. We estimate the first-order Sobol' indices and the Shapley values, where we report two Shapley values using the exact and approximation methods. Our companions are summarized in the right figure below.
+
+![gfunc_shapley_gonda](test/figs/gfunc_shapley_gonda.png){width=40%}![gfunc_sobol](test/figs/gfunc_shapley.png){width=40%}
 
 #### Ishigami function
 
@@ -122,15 +135,21 @@ We consider another analytical function, the Ishigami function, where the three 
 f\left( X_{1}, X_{2}, X_{3} \right) = \sin X_{1} + 7 \sin^{2}X_{2} + 0.1 X^{4}_{3} \sin X_{1}
 ```
 
-##### First-order Sobol' indices
+`test/ishigami_sobol_shapley.py` computes the first-order Sobol' indices and the Shapley values.
+
+##### First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008)
 
 The analytical values of the first-order Sobol' indices are known and they are $S_{1} = 0.3139, S_{2}=0.4424, S_{3}=0$.
 
-##### Shapley values
+We estimate the first-order Sobol' indices using a GP surrogate model. We achieve a good approximation of the first-order Sobol' indices using GP.
 
-The left figure is cited from [Goda 2021, Fig. 1](https://doi.org/10.1016/j.ress.2021.107702), whereas the right figure summarizes our computation.
+![ishigami_sobol](test/figs/ishigami_sobol.png){width=40%}
 
-![Gonda](test/figs/ishigami_shapley_gonda.png){width=50%}![Shapley](test/figs/ishigami_shapley.png){width=50%}
+##### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
+
+[Goda (2021), Fig. 1](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the Shapley values of the Ishigami function, whereas our estimation of the Shapley values using the exact and approximation methods are summarized in the right figure below.
+
+![Gonda](test/figs/ishigami_shapley_gonda.png){width=40%}![Shapley](test/figs/ishigami_shapley.png){width=40%}
 
 ### Use with the DEQN library
 

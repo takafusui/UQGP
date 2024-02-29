@@ -18,7 +18,7 @@ class TestFunc:
         """Initialize TestFunc class."""
         self.train_X = train_X
 
-    def g_func(self, train_X):
+    def g_func(self, train_X, marrel_or_goda):
         """Define the g-function of Sobol.
 
 		n: Number of training datapoints
@@ -32,8 +32,10 @@ class TestFunc:
 
         for idx in range(train_X.shape[1]):
 			# Set the coefficients
-            aidx = idx + 1  # aidx = 1, 2, ...
-
+            if marrel_or_goda == 'marrel':
+                aidx = idx + 1  # aidx = 1, 2,...
+            elif marrel_or_goda == 'goda':
+                aidx = idx
 
             _g_func_idx[:, idx] = (
 				np.absolute(4 * train_X[:, idx] - 2) + aidx) / (1 + aidx)
@@ -48,8 +50,10 @@ class TestFunc:
 
     def ishigami_func(self, train_X):
         """Define the Ishigami function."""
-        _ishigami = torch.sin(train_X[:, 0]) \
-            + 7 * torch.sin(train_X[:, 1])**2 \
+        _ishigami = (
+            torch.sin(train_X[:, 0])
+            + 7 * torch.sin(train_X[:, 1])**2
             + 0.1 * train_X[:, 2]**4 * torch.sin(train_X[:, 0])
+            )
 
         return _ishigami[:, None]
