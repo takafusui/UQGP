@@ -8,7 +8,7 @@ E-mail: u.takafumi@gmail.com
 Description:
 Compute Shapley effects using the exact or the approximation methods
 Reference:
-Song et al. (2016), Goda (2021)
+Song et al. (2016) and Goda (2021)
 """
 import numpy as np
 import itertools
@@ -16,7 +16,7 @@ import itertools
 import torch
 import gpytorch
 # BoTorch
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 
 # Latin Hypercube Sampling
 from smt.sampling_methods import LHS
@@ -38,32 +38,19 @@ def compute_shapley_gp(
 
     train_X, train_y: Experimental design points (training data)
     train_X_bounds: Lower (train_X_bounds[0]) and Upper (train_X_bounds[1]) bounds
-    N_eval_var_y: Number of evaluations to estimate the total model variance
+    N_eval_var_y: Number of Monte-Carlo simulations to estimate the total model variance
     N_text_X: Number of test data evaluated in batch
     N_Xi: Number of fixed inputs (inner loop)
     exact_or_approx: Using the exact or approximation method (Song et al. 2016)
-    max_counter: Maximum number of permutations to be taken
+    max_counter: Maximum number of permutations
     """
-    # Get the dimensions of train_X and train_y to standardize inputs
-    # train_X_dim = train_X.shape[-1]
-    # train_y_dim = train_y.shape[-1]
-
     # Get the number of inputs
     N_inputs = train_X.shape[-1]
 
-    # # Train the GP model with the standardized inputs
-    # gp = SingleTaskGP(
-    #     train_X, train_y,
-    #     input_transform=InputStandardize(d=train_X_dim),
-    #     outcome_transform=Standardize(m=train_y_dim)
-    # )
-    # xlimits = np.stack((X_lower, X_upper), axis=1)
-    # train_X_bounds = torch.from_numpy(xlimits.T)
-
-    # Initialze a GP instance
+    # Initialize a GP instance
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
 
     # Latin hypercube sampling to set the test data points
     sampling = LHS(xlimits=train_X_bounds.T.numpy())
@@ -77,9 +64,9 @@ def compute_shapley_gp(
         var_pred_eval_X_mean = torch.var(pred_eval_X_mean)
 
     def compute_shapley_gp_pi(pi, shap, norm_flag):
-        """Given the permutated set, compute the Shapley values.
+        """Given the permuted set, compute the Shapley values.
 
-        pi: Permutated set
+        pi: Permuted set
         shap: Shapley values from the previous iteration
         norm_flag: If true, return Shapley values normalized by total variance
         """

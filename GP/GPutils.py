@@ -27,13 +27,6 @@ def initialize_GP(train_X, train_y, train_X_bounds):
     train_X_dim = train_X.shape[-1]
     train_y_dim = train_y.shape[-1]
 
-    # train_X_std = standardize(train_X)
-    # train_y_std = standardize(train_y)
-    # # Train the GP model with the standardized inputs
-    # gp = SingleTaskGP(
-    #     train_X_std, train_y_std
-    # )
-
     gp = SingleTaskGP(
         train_X, train_y,
         input_transform=Normalize(d=train_X_dim, bounds=train_X_bounds),

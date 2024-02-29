@@ -15,7 +15,7 @@ import itertools
 import torch
 import gpytorch
 # BoTorch
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 
 from UQGP.GP import GPutils
 
@@ -35,31 +35,15 @@ def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
     return
     S1st_pred.shape = [N_inputs]
     """
-    # Get the dimensions of train_X and train_y to standardize inputs
-    # train_X_dim = train_X.shape[-1]
-    # train_y_dim = train_y.shape[-1]
-
     # Get the number of inputs
     N_inputs = train_X.shape[-1]
     # Number of test points
     N_test_X = test_X.shape[0]
 
-    # Train the GP model with the standardized inputs
-    # likelihood = gpytorch.likelihoods.GaussianLikelihood(
-    #     batch_shape=torch.Size([N_batch_size]))
-    # gp = SingleTaskGP(
-    #     train_X, train_y,  # likelihood=likelihood,
-    #     input_transform=InputStandardize(d=train_X_dim),
-    #     outcome_transform=Standardize(m=train_y_dim)
-    # )
-    # mll = gpytorch.mlls.ExactMarginalLogLikelihood(gp.likelihood, gp)
-    # xlimits = np.stack((X_lower, X_upper), axis=1)
-    # train_X_bounds = torch.from_numpy(xlimits.T)
-
     # Initialize a GP model
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         # As we standardized inputs, we must use gp.posterior to get rescaled
@@ -93,9 +77,8 @@ def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
                 # rescaled outputs.
                 pred_Xi = gp.posterior(test_Xi)
                 pred_Xi_mean = pred_Xi.mean  # Prediction mean
-            pred_test_Xi_mean[:, jdx] = pred_Xi_mean[0]
+            pred_test_Xi_mean[:, jdx] = pred_Xi_mean[:, 0]
 
-        # import ipdb; ipdb.set_trace()
         # Take the mean over X1, X2, ..., Xd (Xi.shape=N_test_X)
         E_pred_test_Xi_mean = torch.mean(pred_test_Xi_mean, axis=0)
         # Take the variance wrt. Xi (Xi.shape=N_Xi)
@@ -139,7 +122,7 @@ def compute_S2nd_pred(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range)
     train_X_bounds = torch.from_numpy(xlimits.T)
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
     # Get into evaluation (predictive posterior) mode
     # gp.eval()
     # likelihood.eval()
@@ -247,7 +230,7 @@ def compute_S1st_tilde(
     # Initialize a GP model
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
 
     # Draw N_sampling samples from the trained GP model
     # Use torch.distributions.Normal() method
@@ -337,7 +320,7 @@ def compute_S2nd_tilde(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range
     train_X_bounds = torch.from_numpy(xlimits.T)
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
     # Get into evaluation (predictive posterior) mode
     # gp.eval()
     # likelihood.eval()

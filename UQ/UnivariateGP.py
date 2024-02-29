@@ -8,12 +8,13 @@ E-mail: u.takafumi@gmail.com
 Description:
 Compute univariate effects using a GP surrogate model
 Reference:
+Younes et al. (2013)
 """
 import numpy as np
 import torch
 import gpytorch
 # BoTorch
-from botorch.fit import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 
 from UQGP.GP import GPutils
 
@@ -56,7 +57,7 @@ def compute_univariate_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
     # Initialize a GP model
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
 
     # Univariate effect using GP prediction
     uni_pred = torch.empty([N_inputs, N_Xi])
@@ -129,7 +130,7 @@ def compute_univariate_tilde(
     # Initialize a GP model
     mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
     # Train the GP model based on train_X and train_y
-    fit_gpytorch_model(mll)  # Using BoTorch's routine
+    fit_gpytorch_mll(mll)  # Using BoTorch's routine
 
     Ytilde_Xi = torch.empty([N_sampling, N_test_X, N_Xi])
     E_Ytilde_Xi = torch.empty([N_inputs, N_sampling, N_Xi])
