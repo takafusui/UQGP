@@ -23,7 +23,7 @@ from smt.sampling_methods import LHS
 
 from UQGP.GP import GPutils
 
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.float64)  # gpytorch by default uses double
 # torch.manual_seed(123)
 
 
@@ -94,6 +94,7 @@ def compute_shapley_gp(
 				#TODO loops wrt. N_outer and N_inner, which are very slow.
 				#TODO We should speed up this part leveraging the gpytorch
 				#TODO batch computation.
+				#* Maybe DONE
 
 				# Retlive the upper and the lower bounds of inputs
 				X_upper_vec = torch.empty([1, len(minus_pi_jdxplus)])
@@ -102,35 +103,34 @@ def compute_shapley_gp(
 					X_lower_vec[:, hdx] = train_X_bounds[0, hdx_val]
 					X_upper_vec[:, hdx] = train_X_bounds[1, hdx_val]
 
+				# Draw input that will be fixed
+				X_minus_P_piplus = (X_upper_vec - X_lower_vec) * torch.rand(
+					N_outer, len(minus_pi_jdxplus)) + X_lower_vec
+
+				mean_pred_X = torch.empty((N_outer, N_inner))
 				var_mean_pred_X = torch.empty(N_outer)
 
-				for odx in range(N_outer):
-					# Draw input that will be fixed
-					X_minus_P_piplus = (X_upper_vec - X_lower_vec) * torch.rand(
-						1, len(minus_pi_jdxplus)) + X_lower_vec
+				for kdx in range(N_inner):
+					# Draw input from the original distribution
+					X_P_piplus = (train_X_bounds[1] - train_X_bounds[0]) * torch.rand(
+						N_outer, N_inputs) + train_X_bounds[0]
+					# Fix inputs with minus_P_piplus
+					X_P_piplus[:, minus_pi_jdxplus] = X_minus_P_piplus
 
-					mean_pred_X = torch.empty(N_inner)
+					# Make prediction based on posterior
+					pred_X = gp.posterior(X_P_piplus)
+					mean_pred_X[:, kdx] = pred_X.mean.flatten()
 
-					for kdx in range(N_inner):
-						# Draw input from the original distribution
-						X_P_piplus = (train_X_bounds[1] - train_X_bounds[0]) * torch.rand(
-							1, N_inputs) + train_X_bounds[0]
-						# Fix inputs with minus_P_piplus
-						X_P_piplus[:, minus_pi_jdxplus] = X_minus_P_piplus
-
-						pred_X = gp.posterior(X_P_piplus)
-						mean_pred_X[kdx] = pred_X.mean.flatten()
-
-					# Take variance of inner loop
-					if norm_flag is True:
-						# Normalize by the total variance
-						var_mean_pred_X[odx] = torch.var(mean_pred_X) \
-							/ var_pred_eval_X_mean
-					else:
-						var_mean_pred_X[odx] = torch.var(mean_pred_X)
+				# Take variance of inner loop, see mean_pred_X
+				if norm_flag is True:
+					# Normalize by the total variance
+					var_mean_pred_X = torch.var(mean_pred_X, axix=1) \
+						/ var_pred_eval_X_mean
+				else:
+					var_mean_pred_X = torch.var(mean_pred_X, axis=1)
 
 				# Take mean of outer loop wrt. pi_jdx
-				c_P_union_pi = torch.mean(var_mean_pred_X)
+				c_P_union_pi = torch.mean(var_mean_pred_X, axis=0)
 
 			# Update the Shapley value
 			delta_c_pi_jdx = c_P_union_pi - prevC
@@ -158,22 +158,3 @@ def compute_shapley_gp(
 			counter += 1
 
 	return var_pred_eval_X_mean, shap / counter
-
-
-
-""" 				# Initialize the prediction mean
-				mean_pred_X = torch.empty((N_outer, N_inner))
-				var_mean_pred_X =torch.empty(N_outer)
-
-				import ipdb; ipdb.set_trace()
-
-				for kdx in range(N_inner):
-					eval_Xi = eval_X.detach().clone()
-					# Fix Xi
-					eval_Xi[:, minus_pi_jdxplus] = Xi[kdx, :]
-					with torch.no_grad(), gpytorch.settings.fast_pred_var():
-						pred_X = gp.posterior(eval_Xi)
-						mean_pred_Xi[:, kdx] = pred_Xi.mean.flatten()  # Prediction mean
-
-"""				# import ipdb; ipdb.set_trace()
-

@@ -99,7 +99,7 @@ ax.legend()
 plt.savefig('figs/gfunc_sobol.png', bbox_inches="tight")
 plt.close()
 
-import ipdb; ipdb.set_trace()
+# import ipdb; ipdb.set_trace()
 # --------------------------------------------------------------------------- #
 # Shapley values
 # We aim to replicate Gonda (2021) Fig. 3
@@ -135,15 +135,20 @@ test_y = testfunc.g_func(test_X, 'goda')
 Q2 = ComputeErrorGP.Q2_GP(gp, test_X, test_y)
 print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 
-var_pred_eval_X_mean_exact, shap_exact = ShapleyGP.compute_shapley_gp(
-    train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_test_X=1000, N_Xi=3, exact_or_approx='exact',
-    max_counter=None, norm_flag=False)
-
+print(r"Using the approximation method")
 var_pred_eval_X_mean_approx, shap_approx = ShapleyGP.compute_shapley_gp(
     train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_test_X=100, N_Xi=3, exact_or_approx='approx',
-    max_counter=3000, norm_flag=False)
+    N_eval_var_y=10000, N_test_X=1000, N_inner=3, N_outer=1,
+    exact_or_approx='approx', max_counter=3000, norm_flag=False)
+
+print(r"Using the exact method")
+cmt = '''Note that as it needs to traverse all 10! permuted sets in this example, it is
+extremely slow.'''
+print(cmt)
+var_pred_eval_X_mean_exact, shap_exact = ShapleyGP.compute_shapley_gp(
+    train_X, train_y, train_X_bounds,
+    N_eval_var_y=10000, N_test_X=1000, N_inner=3, N_outer=3000,
+    exact_or_approx='exact', max_counter=None, norm_flag=False)
 
 # Plot the Shapley values using the exact and approximation method
 fig, ax = plt.subplots(figsize=fsize)
