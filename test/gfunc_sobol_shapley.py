@@ -26,7 +26,7 @@ from test_func import TestFunc
 # --------------------------------------------------------------------------- #
 # Use TeX font
 rc('font', **{'family': 'sans-serif', 'serif': ['Helvetica']})
-rc('text', usetex=True)
+# rc('text', usetex=True)
 
 # Figure size
 fsize = (9, 6)

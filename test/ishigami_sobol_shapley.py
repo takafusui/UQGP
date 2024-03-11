@@ -26,7 +26,7 @@ from test_func import TestFunc
 # --------------------------------------------------------------------------- #
 # Use TeX font
 rc('font', **{'family': 'sans-serif', 'serif': ['Helvetica']})
-rc('text', usetex=True)
+# rc('text', usetex=True)
 
 # Figure size
 fsize = (9, 6)
@@ -73,9 +73,9 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 
 # import ipdb; ipdb.set_trace()
 # --------------------------------------------------------------------------- #
-# First-order Sobol' indices using prediction only
+print(r"First-order Sobol' indices using prediction only")
 # --------------------------------------------------------------------------- #
-""" N_Xi = 1000
+N_Xi = 1000
 S1st_pred = SobolGP.compute_S1st_pred(
     train_X, train_y, train_X_bounds, test_X, N_Xi)
 
@@ -100,11 +100,9 @@ ax.set_ylabel(r"$S_{1}$")
 ax.legend()
 plt.savefig('figs/ishigami_sobol.png', bbox_inches="tight")
 plt.close()
- """
-# import ipdb; ipdb.set_trace()
 
 # --------------------------------------------------------------------------- #
-# Shapley values
+print(r"Shapley values using the exact and approx methods")
 # --------------------------------------------------------------------------- #
 var_pred_eval_X_mean_exact, shap_exact = ShapleyGP.compute_shapley_gp(
     train_X, train_y, train_X_bounds,
