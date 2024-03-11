@@ -1,10 +1,10 @@
 # UQGP: Uncertainty Quantification based on the Gaussian Process
 
-This package performs uncertainty quantification (UQ) based on the Gaussian process (GP). To quantify parametric uncertainty in a mathematical model $\mathcal{M}\left( \cdot \right)$, we compute the following three metrics where we utilize the GP-based surrogate to speed up overall computations:
+This library performs variance-based uncertainty quantification (UQ) based on the Gaussian process (GP). To quantify parametric uncertainty in a mathematical model $\mathcal{M}\left( \cdot \right)$, we compute the following three metrics where we utilize the GP-based surrogate to speed up overall computations:
 
 - First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008). This index is useful for factor prioritization.
 - Shapley values following [Owen (2014)](https://doi.org/10.1137/130936233), [Song et al. (2016)](https://doi.org/10.1137/15M1048070), and [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702). Unlike the Sobol' indices, the sum of the Shapley values is equal to the total model variance.
-- Univariate effects following [Younes et al. (2013)](https://doi.org/10.2136/vzj2011.0150)
+- Univariate effects following [Younes et al. (2013)](https://doi.org/10.2136/vzj2011.0150).
 
 ## Getting Started
 
@@ -18,11 +18,9 @@ the Sobol indices, the Shapley values, and the univariate effects.
 
 ## Prerequisites
 
-The `GPUQ` library are built on top of `PyTorch`, `GPyTorch` and `BoTorch`. Please install the newest version of each module.
-
+The `GPUQ` library is built on top of `PyTorch`, `GPyTorch`, and `BoTorch`. Please install the newest version of each package.
 You can also use this library with the `DEQN` library. In this case, you also need to install `Tensorflow`, `Hydra`, among others.
-
-In any cases, we highly recommend creating a `virtualenv` and installing the necessary packages within this environment.
+In any case, we highly recommend creating a `virtualenv` and installing the necessary packages within this environment.
 
 For example, we recommend installing the following versions or higher:
 
@@ -40,7 +38,7 @@ Download from [here](https://github.com/takafusui/UQGP/) and install the package
 
 ## Tests on the analytical functions
 
-We provide two test functions, closely following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008) and [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702).
+We provide two test functions, following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008) and [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702).
 
 ### Predictivity coefficient $Q_{2}$
 
@@ -69,14 +67,18 @@ The analytical values of the first-order Sobol' indices are known and they are $
 
 We estimate the first-order Sobol' indices using a GP surrogate model. We achieve a good approximation of the first-order Sobol' indices using GP.
 
+<p>
 <img src="test/figs/ishigami_sobol.png" width=40%>
+</p>
 
 #### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
 
 [Goda (2021), Fig. 1](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the Shapley values of the Ishigami function, whereas our estimation of the Shapley values using the exact and approximation methods are summarized in the right figure below.
 
+<p>
 <img src="test/figs/ishigami_shapley_gonda.png" width=40%>
 <img src="test/figs/ishigami_shapley.png" width=40%>
+</p>
 
 ### Sobol' g-function
 
@@ -92,15 +94,19 @@ Following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008), we
 
 Our approximation results using GP are summarized below. Since GP modeling is a stochastic process, we should iterate to estimate our estimates' mean and standard deviation.
 
+<p>
 <img src="test/figs/gfunc_sobol.png" width=40%>
+</p>
 
 #### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
 
 Following [Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702), we choose $d=10$ and $a_{i} = i - 1$ for $i=1, \cdots, 10$.
 [Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the first-order Sobol' indices (Main effect) and the Shapley values of the Sobol' g-function. We estimate the first-order Sobol' indices and the Shapley values, where we report two Shapley values using the exact and approximation methods. Our companions are summarized in the right figure below.
 
+<p>
 <img src="test/figs/gfunc_shapley_gonda.png" width=40%>
 <img src="test/figs/gfunc_shapley.png" width=40%>
+</p>
 
 ## Use with the DEQN library
 
