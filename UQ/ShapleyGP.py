@@ -32,14 +32,13 @@ torch.set_default_dtype(torch.float64)  # gpytorch by default uses double
 # --------------------------------------------------------------------------- #
 def compute_shapley_gp(
 		train_X, train_y, train_X_bounds,
-		N_eval_var_y, N_test_X, N_inner, N_outer,
+		N_eval_var_y, N_inner, N_outer,
 		exact_or_approx, max_counter, norm_flag=False):
 	"""Compute the Shapley values.
 
 	train_X, train_y: Experimental design points (training data)
 	train_X_bounds: Lower (train_X_bounds[0]) and Upper (train_X_bounds[1]) bounds
 	N_eval_var_y: Number of Monte-Carlo simulations to estimate the total model variance
-	N_text_X: Number of test data evaluated in batch
 	N_inner: Number of inner loop
 	N_outer: Number of outer loop
 	exact_or_approx: Using the exact or approximation method (Song et al. 2016)
@@ -71,11 +70,10 @@ def compute_shapley_gp(
 		shap: Shapley values from the previous iteration
 		norm_flag: If true, return Shapley values normalized by total variance
 		"""
-		test_X = torch.from_numpy(sampling(N_test_X))
 		prevC = 0  # Initialize the previous cost function
 		pi_jdxplus = []  # Initialize the index to be fixed
 
-		N_inputs = test_X.shape[-1]  # Number of inputs
+		N_inputs = train_X.shape[-1]  # Number of inputs
 
 		for jdx in range(N_inputs):
 			pi_jdx = pi[jdx]

@@ -106,12 +106,12 @@ print(r"Shapley values using the exact and approx methods")
 # --------------------------------------------------------------------------- #
 var_pred_eval_X_mean_exact, shap_exact = ShapleyGP.compute_shapley_gp(
     train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_test_X=1000, N_inner=3, N_outer=3000,
+    N_eval_var_y=10000, N_inner=3, N_outer=3000,
     exact_or_approx='exact', max_counter=None, norm_flag=False)
 
 var_pred_eval_X_mean_approx, shap_approx = ShapleyGP.compute_shapley_gp(
     train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_test_X=1000, N_inner=3, N_outer=1,
+    N_eval_var_y=10000, N_inner=3, N_outer=1,
     exact_or_approx='approx', max_counter=3000, norm_flag=False)
 
 # Plot
@@ -128,5 +128,3 @@ ax.set_ylabel(r"$Sh_{i}$")
 ax.legend()
 plt.savefig('figs/ishigami_shapley.png', bbox_inches="tight")
 plt.close()
-
-import ipdb; ipdb.set_trace()

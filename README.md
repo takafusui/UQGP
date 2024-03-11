@@ -88,6 +88,8 @@ We compute the first-order Sobol' indices for the Sobol' g-function that is defi
 g\left( X_{1}, \cdots, X_{d} \right) = \prod_{i=1}^{d}\frac{\left| 4X_{i} - 2 \right| + a_{i}}{1 + a_{i}}, a_{i} \geq 0
 ```
 
+`test/gfunc_sobol_shapley.py` computes the first-order Sobol' indices and the Shapley values.
+
 #### First-order Sobol' indices following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008)
 
 Following [Marrel et al. (2009)](https://doi.org/10.1016/j.ress.2008.07.008), we choose $d=5$ and $a_{i} = i$ for $i=1, \cdots, 5$. With this particular setting, the first-order Sobol' indices are analytically given, and approximately $S_{1} =0.48, S_{2} = 0.21, S_{3} = 0.12, S_4 = 0.08, S_5 = 0.05$.
