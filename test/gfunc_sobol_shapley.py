@@ -77,7 +77,7 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 # We aim to replicate Marrel et al. (2009) Section 4.3
 # --------------------------------------------------------------------------- #
 N_Xi = 1000
-S1st_pred = SobolGP.compute_S1st_pred(
+var_y_sobol, S1st_pred = SobolGP.compute_S1st_pred(
     train_X, train_y, train_X_bounds, test_X, N_Xi)
 
 print(r"First-order Sobol' indices are:")
