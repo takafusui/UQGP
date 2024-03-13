@@ -155,4 +155,4 @@ def compute_shapley_gp(
 			shap, counter = compute_shapley_gp_pi(pi, shap, norm_flag)
 			counter += 1
 
-	return var_pred_eval_X_mean, shap / counter
+	return var_pred_eval_X_mean.numpy(), shap / counter

@@ -71,7 +71,7 @@ We estimate the first-order Sobol' indices using a GP surrogate model. We achiev
 <img src="test/figs/ishigami_sobol.png" width=40%>
 </p>
 
-#### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
+#### Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
 
 [Goda (2021), Fig. 1](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the Shapley values of the Ishigami function, whereas our estimation of the Shapley values using the exact and approximation methods are summarized in the right figure below.
 
@@ -100,10 +100,10 @@ Our approximation results using GP are summarized below. Since GP modeling is a 
 <img src="test/figs/gfunc_sobol.png" width=40%>
 </p>
 
-#### First-order Sobol' indices and Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
+#### Shapley values following [Goda (2021)](https://doi.org/10.1016/j.ress.2021.107702)
 
 Following [Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702), we choose $d=10$ and $a_{i} = i - 1$ for $i=1, \cdots, 10$.
-[Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the first-order Sobol' indices (Main effect) and the Shapley values of the Sobol' g-function. We estimate the first-order Sobol' indices and the Shapley values, where we report two Shapley values using the exact and approximation methods. Our companions are summarized in the right figure below.
+[Goda (2021), Fig. 3](https://doi.org/10.1016/j.ress.2021.107702) (the left figure below) estimated the Shapley values of the Sobol' g-function. The exact method must traverse the $10!$ permuted set that is computationaly expensive. Instead, we estimate the Shapley values using the approximation methods and report the mean and the standard deviation of our Monte-Carlo estimation. Our companions are summarized in the right figure below.
 
 <p>
 <img src="test/figs/gfunc_shapley_gonda.png" width=40%>
@@ -235,7 +235,11 @@ The figures are stored in `UQ/model_name/trainXYZ_LHS/univariate/figs`.
 
 ### LOO error analysis
 
-Under construction...
+Leave-one-out (LOO) error is considered to be a good compromise between accuracy and efficiency, for instance, see [Le Gratiet et al. (2017)](https://doi.org/10.1007/978-3-319-12385-1_38). We compute the LOO error to evaluate the global accuracy of the GP-based surrogate model. It is known that, to practically perform sensitivity analysis, $\epsilon_{\mathrm{LOO}} \leq 0.01$ is sufficiently good. To compute the error, execute
+
+```bash
+export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python uq_gp_err.py STARTING_POINT=LATEST hydra.run.dir=$USE_CONFIG_FROM_RUN_DIR constants.constants.N_train_X=XYZ
+```
 
 ### Bayesian active learning
 

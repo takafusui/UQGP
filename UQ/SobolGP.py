@@ -20,7 +20,8 @@ from botorch.fit import fit_gpytorch_mll
 from UQGP.GP import GPutils
 
 
-def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
+def compute_S1st_pred(
+        train_X, train_y, train_X_bounds, test_X, N_inner, norm_flag=True):
     """Compute the first-order Sobol' indices using the GP predictor only.
 
     n: Number of experimental design
@@ -33,6 +34,7 @@ def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
     train_X_bounds: Lower (train_X_bounds[0]) and Upper (train_X_bounds[1]) bounds
 
     return
+    var_E_pred_test_X
     S1st_pred.shape = [N_inputs]
     """
     # Get the number of inputs
@@ -61,12 +63,12 @@ def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
         # Fix the model parameter i that is uniformly distributed
         Xi_sampler = torch.distributions.uniform.Uniform(
             train_X_bounds[0, idx], train_X_bounds[1, idx])
-        Xi = Xi_sampler.sample((N_Xi, ))
+        Xi = Xi_sampler.sample((N_inner, ))
 
         # Store the mean of the mean of predictions
-        pred_test_Xi_mean = torch.empty([N_test_X, N_Xi])
+        pred_test_Xi_mean = torch.empty([N_test_X, N_inner])
 
-        for jdx in range(N_Xi):
+        for jdx in range(N_inner):
             # Fix parameter idx-th at Xi[jdx]
             test_Xi = test_X.detach().clone()
             test_Xi[:, idx] = Xi[jdx]
@@ -81,16 +83,20 @@ def compute_S1st_pred(train_X, train_y, train_X_bounds, test_X, N_Xi):
 
         # Take the mean over X1, X2, ..., Xd (Xi.shape=N_test_X)
         E_pred_test_Xi_mean = torch.mean(pred_test_Xi_mean, axis=0)
-        # Take the variance wrt. Xi (Xi.shape=N_Xi)
+        # Take the variance wrt. Xi (Xi.shape=N_inner)
         var_E_pred_test_Xi_mean[idx] = torch.var(E_pred_test_Xi_mean)
 
     # Compute the first-order Sobol indices using the predictor-only
-    S1st_pred = var_E_pred_test_Xi_mean / var_E_pred_test_X
+    if norm_flag is True:
+        S1st_pred = var_E_pred_test_Xi_mean / var_E_pred_test_X
+    else:
+        S1st_pred = var_E_pred_test_Xi_mean
 
-    return S1st_pred
+    return var_E_pred_test_X, S1st_pred
 
 
-def compute_S2nd_pred(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range):
+def compute_S2nd_pred(
+        train_X, train_y, test_X, X_lower, X_upper, N_inner, X_range):
     """Compute the second-order Sobol' indices using the predictor only.
 
     train_X.shape = [n, N_inputs]
@@ -143,14 +149,14 @@ def compute_S2nd_pred(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range)
             X_range[0, idx[0]], X_range[1, idx[0]])
         Xj_sampler = torch.distributions.uniform.Uniform(
             X_range[0, idx[1]], X_range[1, idx[1]])
-        # Draw N_Xi samples
-        Xi = Xi_sampler.sample((N_Xi, ))
-        Xj = Xj_sampler.sample((N_Xi, ))
+        # Draw N_inner samples
+        Xi = Xi_sampler.sample((N_inner, ))
+        Xj = Xj_sampler.sample((N_inner, ))
 
-        pred_test_Xi_mean = torch.empty([N_test_X, N_Xi])
-        pred_test_Xj_mean = torch.empty([N_test_X, N_Xi])
-        pred_test_Xij_mean = torch.empty([N_test_X, N_Xi])
-        for jdx in range(N_Xi):
+        pred_test_Xi_mean = torch.empty([N_test_X, N_inner])
+        pred_test_Xj_mean = torch.empty([N_test_X, N_inner])
+        pred_test_Xij_mean = torch.empty([N_test_X, N_inner])
+        for jdx in range(N_inner):
             test_Xi = test_X.detach().clone()
             test_Xj = test_X.detach().clone()
             test_Xij = test_X.detach().clone()
@@ -191,7 +197,7 @@ def compute_S2nd_pred(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range)
 
 
 def compute_S1st_tilde(
-        train_X, train_y, train_X_bounds, test_X, N_Xi, X_range, N_sampling):
+        train_X, train_y, train_X_bounds, test_X, N_inner, X_range, N_sampling):
     """Compute the first-order Sobol' indices using the global GP model.
 
     n: Number of experimental design
@@ -250,18 +256,18 @@ def compute_S1st_tilde(
     # Take the mean over Omega (Omega.shape=N_sampling)
     E_var_Ytilde = torch.mean(var_Ytilde)  # Denominator
 
-    Ytilde_Xi = torch.empty([N_sampling, N_test_X, N_Xi])
+    Ytilde_Xi = torch.empty([N_sampling, N_test_X, N_inner])
     var_E_Ytilde_Xi = torch.empty([N_inputs, N_sampling])
 
     for idx in range(N_inputs):
         # Fix the model parameter i that is assumed to be uniformly distributed
         Xi_sampler = torch.distributions.uniform.Uniform(
             X_range[0, idx], X_range[1, idx])
-        Xi = Xi_sampler.sample((N_Xi, ))
+        Xi = Xi_sampler.sample((N_inner, ))
 
-        # E_Ytilde_Xi = torch.empty(N_Xi, N_sampling)
+        # E_Ytilde_Xi = torch.empty(N_inner, N_sampling)
 
-        for jdx in range(N_Xi):
+        for jdx in range(N_inner):
             # Fix parameter idx at Xi[jdx]
             test_Xi = test_X.detach().clone()
             test_Xi[:, idx] = Xi[jdx]
@@ -277,7 +283,7 @@ def compute_S1st_tilde(
 
         # Take the mean over X1, X2, ..., Xd (Xi.shape=N_test_X)
         E_Ytilde_Xi = torch.mean(Ytilde_Xi, axis=1)
-        # Take the variance over Xi (Xi.shape=N_Xi)
+        # Take the variance over Xi (Xi.shape=N_inner)
         var_E_Ytilde_Xi[idx, :] = torch.var(E_Ytilde_Xi, axis=1)
 
     # Take the mean over Omega (Omega.shape=N_sampling)
@@ -289,7 +295,8 @@ def compute_S1st_tilde(
     return mu_S1st_tilde, sigma_S1st_tilde
 
 
-def compute_S2nd_tilde(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range, N_sampling):
+def compute_S2nd_tilde(
+        train_X, train_y, test_X, X_lower, X_upper, N_inner, X_range, N_sampling):
     """Compute the second-order Sobol' indices using the global GP model.
 
     train_X.shape = [n, N_inputs]
@@ -338,7 +345,7 @@ def compute_S2nd_tilde(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range
     var_Ytilde = torch.var(Ytilde, axis=1)
     E_var_Ytilde = torch.mean(var_Ytilde)
 
-    Y_tilde_Xi = torch.empty([N_sampling, N_test_X, N_Xi])
+    Y_tilde_Xi = torch.empty([N_sampling, N_test_X, N_inner])
     Y_tilde_Xj = torch.empty_like(Y_tilde_Xi)
     Y_tilde_Xij = torch.empty_like(Y_tilde_Xi)
 
@@ -352,12 +359,12 @@ def compute_S2nd_tilde(train_X, train_y, test_X, X_lower, X_upper, N_Xi, X_range
             X_range[0, idx[0]], X_range[1, idx[0]])
         Xj_sampler = torch.distributions.uniform.Uniform(
             X_range[0, idx[1]], X_range[1, idx[1]])
-        # Draw N_Xi samples
-        Xi = Xi_sampler.sample((N_Xi, ))
-        Xj = Xj_sampler.sample((N_Xi, ))
+        # Draw N_inner samples
+        Xi = Xi_sampler.sample((N_inner, ))
+        Xj = Xj_sampler.sample((N_inner, ))
 
-        E_Ytilde_Xi = torch.empty(N_Xi)
-        for jdx in range(N_Xi):
+        E_Ytilde_Xi = torch.empty(N_inner)
+        for jdx in range(N_inner):
             test_Xi = test_X.detach().clone()
             test_Xj = test_X.detach().clone()
             test_Xij = test_X.detach().clone()

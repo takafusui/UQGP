@@ -35,7 +35,7 @@ class TestFunc:
             if marrel_or_goda == 'marrel':
                 aidx = idx + 1  # aidx = 1, 2,...
             elif marrel_or_goda == 'goda':
-                aidx = idx
+                aidx = idx  # aidx = 0, 1,...
 
             _g_func_idx[:, idx] = (
 				np.absolute(4 * train_X[:, idx] - 2) + aidx) / (1 + aidx)

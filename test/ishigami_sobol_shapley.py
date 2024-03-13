@@ -76,8 +76,8 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 print(r"First-order Sobol' indices using prediction only")
 # --------------------------------------------------------------------------- #
 N_Xi = 1000
-S1st_pred = SobolGP.compute_S1st_pred(
-    train_X, train_y, train_X_bounds, test_X, N_Xi)
+var_y, S1st_pred = SobolGP.compute_S1st_pred(
+    train_X, train_y, train_X_bounds, test_X, N_inner=N_Xi, norm_flag=True)
 
 print(r"First-order Sobol' indices are:")
 print(S1st_pred)
