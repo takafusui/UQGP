@@ -76,7 +76,7 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 # First-order Sobol' indices using prediction only
 # We aim to replicate Marrel et al. (2009) Section 4.3
 # --------------------------------------------------------------------------- #
-""" N_Xi = 1000
+N_Xi = 1000
 S1st_pred = SobolGP.compute_S1st_pred(
     train_X, train_y, train_X_bounds, test_X, N_Xi)
 
@@ -99,7 +99,7 @@ ax.set_ylabel(r"$S_{1}$")
 ax.legend()
 plt.savefig('figs/gfunc_sobol.png', bbox_inches="tight")
 plt.close()
- """
+
 # import ipdb; ipdb.set_trace()
 # --------------------------------------------------------------------------- #
 # Shapley values
@@ -165,5 +165,3 @@ ax.set_ylabel(r"$Sh_{i}$")
 ax.legend()
 plt.savefig('figs/gfunc_shapley.png', bbox_inches="tight")
 plt.close()
-
-import ipdb; ipdb.set_trace()
