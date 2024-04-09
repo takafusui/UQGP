@@ -60,7 +60,7 @@ train_y_init = hartmann6.evaluate_true(train_X_init)[:, None]
 # --------------------------------------------------------------------------- #
 # Number of initial conditions from which we optimize an acquisition function
 # The larger NUM_RESTARTS, the more memory we need
-N_restarts = 20  # Default number in Ax
+N_restarts = 10  # Default number in Ax is 20
 # The larger RAW_SAMPLES, the better initial condition we have
 raw_samples = 1024  # Default number in Ax
 # Larger N would lead to more precise integration of the posterior variance,
@@ -70,7 +70,7 @@ N_MC_samples = 128  # Should be a power of 2
 q_batch = 1  # when q > 1 in optimize_acqf, q =! 1
 
 # Error analysis setting
-N_MCiter = 3  # Number of Monte-Carlo iteration
+N_MCiter = 10  # Number of Monte-Carlo iteration
 verbose = 20
 N_train_X_end = 200
 N_train_X_list = np.arange(N_train_X_init, N_train_X_end + 1, verbose)
@@ -132,7 +132,7 @@ for jdx in range(N_MCiter):
 		if (idx + 1) % verbose == 0:
 			print(r"Iteration: {} / {}".format(idx+ 1 , N_maxiter))
 			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, idx] = err[0]
+			errLOO[jdx, (idx + 1) // verbose] = err[0]
 			if jdx == 0:
 				N_train_X_LOO.append(train_X.shape[0])
 
@@ -171,7 +171,7 @@ for jdx in range(N_MCiter):
 		if (idx + 1) % verbose == 0:
 			print(r"Iteration: {} / {}".format(idx+ 1 , N_maxiter))
 			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, idx] = err[0]
+			errLOO[jdx, (idx + 1) // verbose] = err[0]
 			if jdx == 0:
 				N_train_X_LOO.append(train_X.shape[0])
 
@@ -179,6 +179,7 @@ NIPV_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 NIPV_result.to_csv('csv/hartmann6_NIPV.csv', index=False, header=False)
 
 import ipdb; ipdb.set_trace()
+
 # --------------------------------------------------------------------------- #
 # Plot the LOO error
 # --------------------------------------------------------------------------- #
