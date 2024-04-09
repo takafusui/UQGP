@@ -59,7 +59,7 @@ def leave_one_out_GP(train_X, train_y, train_X_bounds):
 	# Leave-one-out error
 	errLOO = 1 / loo.get_n_splits(train_X) * torch.sum(err)
 
-	return errLOO.reshape(1)
+	return errLOO.reshape(1).numpy()
 
 
 def mean_squared_err_GP(gp, test_X, test_y):

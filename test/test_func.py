@@ -14,9 +14,8 @@ import torch
 class TestFunc:
     """Correction of the test functions for uncertainty quantification."""
 
-    def __init__(self, train_X):
+    def __init__(self):
         """Initialize TestFunc class."""
-        self.train_X = train_X
 
     def g_func(self, train_X, marrel_or_goda):
         """Define the g-function of Sobol.
