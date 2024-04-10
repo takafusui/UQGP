@@ -56,7 +56,7 @@ train_X_init = torch.from_numpy(sampler(N_train_X_init))
 train_y_init = hartmann6.evaluate_true(train_X_init)[:, None]
 
 # --------------------------------------------------------------------------- #
-# Botorch optimize_acqf parameters
+# Botorch and optimize_acqf parameters
 # --------------------------------------------------------------------------- #
 # Number of initial conditions from which we optimize an acquisition function
 # The larger NUM_RESTARTS, the more memory we need
@@ -105,13 +105,15 @@ LHS_result.to_csv('csv/hartmann6_LHS.csv', index=False, header=False)
 # --------------------------------------------------------------------------- #
 activelearning = ActiveLearning.BayesianActiveLearning(
 	'PSTD', N_restarts, raw_samples, N_MC_samples, q_batch)
-train_X, train_y = train_X_init, train_y_init
 N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
 
 errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
 N_train_X_LOO = []
 
 for jdx in range(N_MCiter):
+	# Initialization
+	train_X, train_y = train_X_init, train_y_init
+
 	for idx in range(N_maxiter):
 
 		if idx == 0:
@@ -144,13 +146,15 @@ PSTD_result.to_csv('csv/hartmann6_PSTD.csv', index=False, header=False)
 # --------------------------------------------------------------------------- #
 activelearning = ActiveLearning.BayesianActiveLearning(
 	'qNIPV', N_restarts, raw_samples, N_MC_samples, q_batch)
-train_X, train_y = train_X_init, train_y_init
 N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
 
 errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
 N_train_X_LOO = []
 
 for jdx in range(N_MCiter):
+	# Initialization
+	train_X, train_y = train_X_init, train_y_init
+
 	for idx in range(N_maxiter):
 
 		if idx == 0:
