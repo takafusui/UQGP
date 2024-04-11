@@ -66,11 +66,11 @@ raw_samples = 1024  # Default number in Ax
 # Larger N would lead to more precise integration of the posterior variance,
 # but since GP posterior variance is a relatively smooth function, would not
 # expect pushing N larger to make a big difference.
-N_MC_samples = 128  # Should be a power of 2
+N_MC_samples = 256  # Should be a power of 2
 q_batch = 1  # when q > 1 in optimize_acqf, q =! 1
 
 # Error analysis setting
-N_MCiter = 10  # Number of Monte-Carlo iteration
+N_MCiter = 5  # Number of Monte-Carlo iteration
 verbose = 20
 N_train_X_end = 200
 N_train_X_list = np.arange(N_train_X_init, N_train_X_end + 1, verbose)
@@ -182,8 +182,6 @@ for jdx in range(N_MCiter):
 NIPV_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 NIPV_result.to_csv('csv/hartmann6_NIPV.csv', index=False, header=False)
 
-import ipdb; ipdb.set_trace()
-
 # --------------------------------------------------------------------------- #
 # Plot the LOO error
 # --------------------------------------------------------------------------- #
@@ -192,11 +190,19 @@ LHS_read = pd.read_csv('csv/hartmann6_LHS.csv', header=None)
 PSTD_read = pd.read_csv('csv/hartmann6_PSTD.csv', header=None)
 NIPV_read = pd.read_csv('csv/hartmann6_NIPV.csv', header=None)
 
+LHS_mu, LHS_std = LHS_read.loc[1:].mean(), LHS_read.loc[1:].std()
+PSTD_mu, PSTD_std = PSTD_read.loc[1:].mean(), PSTD_read.loc[1:].std()
+NIPV_mu, NIPV_std = NIPV_read.loc[1:].mean(), NIPV_read.loc[1:].std()
+
 # Plot
+fill_alpha = 0.3
 fig, ax = plt.subplots(figsize=fsize)
-ax.plot(LHS_read.loc[0], LHS_read.loc[1], label='LHS')
-ax.plot(PSTD_read.loc[0], PSTD_read.loc[1], label='PSTD')
-ax.plot(NIPV_read.loc[0], NIPV_read.loc[1], label='NIPV')
+ax.plot(LHS_read.loc[0], LHS_mu, label='LHS')
+ax.fill_between(LHS_read.loc[0], LHS_mu - LHS_std, LHS_mu + LHS_std, alpha=fill_alpha)
+ax.plot(PSTD_read.loc[0], PSTD_mu, label='PSTD')
+ax.fill_between(PSTD_read.loc[0], PSTD_mu - PSTD_std, PSTD_mu + PSTD_std, alpha=fill_alpha)
+ax.plot(NIPV_read.loc[0], NIPV_mu, label='NIPV')
+ax.fill_between(NIPV_read.loc[0], NIPV_mu - NIPV_std, NIPV_mu + NIPV_std, alpha=fill_alpha)
 ax.set_xlabel(r'Number of experimental design')
 ax.set_ylabel(r'$err_{\mathrm{LOO}}$')
 ax.set_yscale('log')
