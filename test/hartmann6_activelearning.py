@@ -82,7 +82,9 @@ errLOO = np.empty((N_MCiter, len(N_train_X_list)))
 N_train_X_LOO = []
 
 print(r"Using LHS")
+
 for jdx in range(N_MCiter):
+	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
 	for idx, N_train_X in enumerate(N_train_X_list):
 		if idx == 0:
 			# Use the same initial experimental design
@@ -110,14 +112,16 @@ N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
 errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
 N_train_X_LOO = []
 
+print(r"Bayesian active learning using the PSTD criterion")
+
 for jdx in range(N_MCiter):
+	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
 	# Initialization
 	train_X, train_y = train_X_init, train_y_init
 
 	for idx in range(N_maxiter):
 
 		if idx == 0:
-			print(r"Bayesian active learning using the PSTD criterion")
 			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
 			errLOO[jdx, idx] = err[0]
 			if jdx == 0:
@@ -151,14 +155,16 @@ N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
 errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
 N_train_X_LOO = []
 
+print(r"Bayesian active learning using the NIPV criterion")
+
 for jdx in range(N_MCiter):
+	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
 	# Initialization
 	train_X, train_y = train_X_init, train_y_init
 
 	for idx in range(N_maxiter):
 
 		if idx == 0:
-			print(r"Bayesian active learning using the NIPV criterion")
 			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
 			errLOO[jdx, idx] = err[0]
 			if jdx == 0:
