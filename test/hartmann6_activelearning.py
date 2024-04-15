@@ -178,7 +178,7 @@ N_train_X_LOO, errLOO = MCBaisianActiveLearning(
 NIPV_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 NIPV_result.to_csv('csv/hartmann6_NIPV.csv', index=False, header=False)
 
-import ipdb; ipdb.set_trace()
+# import ipdb; ipdb.set_trace()
 # --------------------------------------------------------------------------- #
 # Plot the LOO error
 # --------------------------------------------------------------------------- #
