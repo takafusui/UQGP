@@ -70,9 +70,9 @@ N_MC_samples = 256  # Should be a power of 2
 q_batch = 1  # when q > 1 in optimize_acqf, q =! 1
 
 # Error analysis setting
-n_mc_iter = 10  # 100  # Number of Monte-Carlo iteration
+n_mc_iter = 100  # Number of Monte-Carlo iteration
 verbose = 20
-N_train_X_end = 120  # 200
+N_train_X_end = 200
 N_train_X_list = np.arange(N_train_X_init, N_train_X_end + 1, verbose)
 
 # --------------------------------------------------------------------------- #
