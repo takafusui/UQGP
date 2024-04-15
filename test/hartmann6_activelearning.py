@@ -39,7 +39,7 @@ plt.rcParams["legend.title_fontsize"] = 14
 # --------------------------------------------------------------------------- #
 # Training data
 # --------------------------------------------------------------------------- #
-N_train_X_init = 100
+N_train_X_init = 100  # Initial experimental design size
 # Six-dimensional test function
 col_header = [r'$x_1$', r'$x_2$', r'$x_3$', r'$x_4$', r'$x_5$', r'$x_6$']
 N_inputs = len(col_header)
@@ -70,21 +70,22 @@ N_MC_samples = 256  # Should be a power of 2
 q_batch = 1  # when q > 1 in optimize_acqf, q =! 1
 
 # Error analysis setting
-N_MCiter = 100  # Number of Monte-Carlo iteration
+n_mc_iter = 10  # 100  # Number of Monte-Carlo iteration
 verbose = 20
-N_train_X_end = 200
+N_train_X_end = 120  # 200
 N_train_X_list = np.arange(N_train_X_init, N_train_X_end + 1, verbose)
 
 # --------------------------------------------------------------------------- #
 # Using LHS
 # --------------------------------------------------------------------------- #
-errLOO = np.empty((N_MCiter, len(N_train_X_list)))
+errLOO = np.empty((n_mc_iter, len(N_train_X_list)))
 N_train_X_LOO = []
 
-print(r"Using LHS")
+print(r"Space filling design using LHS")
 
-for jdx in range(N_MCiter):
-	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
+for jdx in range(n_mc_iter):
+	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, n_mc_iter))
+
 	for idx, N_train_X in enumerate(N_train_X_list):
 		if idx == 0:
 			# Use the same initial experimental design
@@ -93,8 +94,10 @@ for jdx in range(N_MCiter):
 		else:
 			train_X = torch.from_numpy(sampler(N_train_X))
 			train_y = hartmann6.evaluate_true(train_X)[:, None]
+		# Compute a LOO error
 		err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
 		errLOO[jdx, idx] = err[0]
+
 		if jdx == 0:
 			# As N_train_X_LOO is the same for all jdx
 			N_train_X_LOO.append(train_X.shape[0])
@@ -103,91 +106,79 @@ LHS_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 LHS_result.to_csv('csv/hartmann6_LHS.csv', index=False, header=False)
 
 # --------------------------------------------------------------------------- #
-# Bayesian active learning with the PSTD acquisition function
+# Bayesian active learning
 # --------------------------------------------------------------------------- #
-activelearning = ActiveLearning.BayesianActiveLearning(
-	'PSTD', N_restarts, raw_samples, N_MC_samples, q_batch)
-N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
+def MCBaisianActiveLearning(
+		criterion, n_mc_iter, n_max_iter, train_X_init, train_y_init, verbose):
+	"""Monte-Carlo Bayesian active learning.
+	criterion: Acquisition function
+	n_mc_iter: Number of Monte-Carlo iteration
+	n_max_iter: Number of max Bayesian active learning iteration
+	train_X_init: Initial training input
+	train_y_init: Initial training output
+	verbose: Print verbose
+	"""
+	# Instantiate active learning object
+	activelearning = ActiveLearning.BayesianActiveLearning(
+		criterion, N_restarts, raw_samples, N_MC_samples, q_batch)
 
-errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
-N_train_X_LOO = []
-
-print(r"Bayesian active learning using the PSTD criterion")
-
-for jdx in range(N_MCiter):
-	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
-	# Initialization
-	train_X, train_y = train_X_init, train_y_init
-
-	for idx in range(N_maxiter):
-
-		if idx == 0:
-			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, idx] = err[0]
-			if jdx == 0:
-				N_train_X_LOO.append(train_X.shape[0])
-
-		train_X_add = activelearning.forward(train_X, train_y, train_X_bounds)
-		train_y_add = hartmann6.evaluate_true(train_X_add)[:, None]
-
-		# Add the candidate point
-		train_X = torch.cat((train_X, train_X_add), axis=0)
-		train_y = torch.cat((train_y, train_y_add), axis=0)
+	# Initialize output arrays
+	errLOO = np.empty((n_mc_iter, n_max_iter//verbose + 1))
+	N_train_X_LOO = []
 
 
-		if (idx + 1) % verbose == 0:
-			print(r"Iteration: {} / {}".format(idx+ 1 , N_maxiter))
-			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, (idx + 1) // verbose] = err[0]
-			if jdx == 0:
-				N_train_X_LOO.append(train_X.shape[0])
+	print(r"Bayesian active learning using the {} criterion".format(criterion))
+
+	for jdx in range(n_mc_iter):
+		print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, n_mc_iter))
+		# Initialization
+		train_X, train_y = train_X_init, train_y_init
+
+		for idx in range(n_max_iter):
+
+			if idx == 0:
+				err = ComputeErrorGP.leave_one_out_GP(
+					train_X, train_y, train_X_bounds)
+				errLOO[jdx, idx] = err[0]
+				if jdx == 0:
+					N_train_X_LOO.append(train_X.shape[0])
+
+			train_X_add = activelearning.forward(train_X, train_y, train_X_bounds)
+			train_y_add = hartmann6.evaluate_true(train_X_add)[:, None]
+
+			# Add the candidate point
+			train_X = torch.cat((train_X, train_X_add), axis=0)
+			train_y = torch.cat((train_y, train_y_add), axis=0)
+
+
+			if (idx + 1) % verbose == 0:
+				print(r"Iteration: {} / {}".format(idx+ 1 , n_max_iter))
+				err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
+				errLOO[jdx, (idx + 1) // verbose] = err[0]
+				if jdx == 0:
+					N_train_X_LOO.append(train_X.shape[0])
+	return N_train_X_LOO, errLOO
+
+# --------------------------------------------------------------------------- #
+# Using the PSTD acquisition function
+# --------------------------------------------------------------------------- #
+n_max_iter = N_train_X_list[-1] - N_train_X_list[0]
+N_train_X_LOO, errLOO = MCBaisianActiveLearning(
+	'PSTD', n_mc_iter, n_max_iter, train_X_init, train_y_init, verbose)
 
 PSTD_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 PSTD_result.to_csv('csv/hartmann6_PSTD.csv', index=False, header=False)
 
 # --------------------------------------------------------------------------- #
-# Bayesian active learning with the qNIPV acquisition function
+# Using the qNIPV acquisition function
 # --------------------------------------------------------------------------- #
-activelearning = ActiveLearning.BayesianActiveLearning(
-	'qNIPV', N_restarts, raw_samples, N_MC_samples, q_batch)
-N_maxiter = N_train_X_list[-1] - N_train_X_list[0]
-
-errLOO = np.empty((N_MCiter, N_maxiter//verbose + 1))
-N_train_X_LOO = []
-
-print(r"Bayesian active learning using the NIPV criterion")
-
-for jdx in range(N_MCiter):
-	print(r"Monte-Carlo iteration {} / {}".format(jdx + 1, N_MCiter))
-	# Initialization
-	train_X, train_y = train_X_init, train_y_init
-
-	for idx in range(N_maxiter):
-
-		if idx == 0:
-			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, idx] = err[0]
-			if jdx == 0:
-				N_train_X_LOO.append(train_X.shape[0])
-
-		train_X_add = activelearning.forward(train_X, train_y, train_X_bounds)
-		train_y_add = hartmann6.evaluate_true(train_X_add)[:, None]
-
-		# Add the candidate point
-		train_X = torch.cat((train_X, train_X_add), axis=0)
-		train_y = torch.cat((train_y, train_y_add), axis=0)
-
-
-		if (idx + 1) % verbose == 0:
-			print(r"Iteration: {} / {}".format(idx+ 1 , N_maxiter))
-			err = ComputeErrorGP.leave_one_out_GP(train_X, train_y, train_X_bounds)
-			errLOO[jdx, (idx + 1) // verbose] = err[0]
-			if jdx == 0:
-				N_train_X_LOO.append(train_X.shape[0])
+N_train_X_LOO, errLOO = MCBaisianActiveLearning(
+	'qNIPV', n_mc_iter, n_max_iter, train_X_init, train_y_init, verbose)
 
 NIPV_result = pd.DataFrame(np.vstack([N_train_X_LOO, errLOO]))
 NIPV_result.to_csv('csv/hartmann6_NIPV.csv', index=False, header=False)
 
+import ipdb; ipdb.set_trace()
 # --------------------------------------------------------------------------- #
 # Plot the LOO error
 # --------------------------------------------------------------------------- #
