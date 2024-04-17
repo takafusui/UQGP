@@ -60,7 +60,7 @@ train_y_init = hartmann6.evaluate_true(train_X_init)[:, None]
 # --------------------------------------------------------------------------- #
 # Number of initial conditions from which we optimize an acquisition function
 # The larger NUM_RESTARTS, the more memory we need
-N_restarts = 10  # Default number in Ax is 20
+N_restarts = 5  # Default number in Ax is 20
 # The larger RAW_SAMPLES, the better initial condition we have
 raw_samples = 1024  # Default number in Ax
 # Larger N would lead to more precise integration of the posterior variance,
