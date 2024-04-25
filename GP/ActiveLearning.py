@@ -96,34 +96,34 @@ class BayesianActiveLearning:
 		"""One step forward active learning"""
 		# Instantiate a GP model
 		mll, gp = GPutils.initialize_GP(train_X, train_y, train_X_bounds)
-    	# Fit a GP model
+		# Fit a GP model
 		fit_gpytorch_mll(mll)
 
 		if self.acquisition == 'qNIPV':
 			# The points to use for MC-integrating the posterior variance
-    		# n: The number of (q-batch) samples. As a best practice, it
-    		# should be powers of 2
-    		# Reshape to have [N, d]
+			# n: The number of (q-batch) samples. As a best practice, it
+			# should be powers of 2
+			# Reshape to have [N, d]
 			qmc_samples = draw_sobol_samples(
 				bounds=train_X_bounds, n=self.N_MC_samples, q=self.q_batch,
 				batch_shape=None, seed=None
-    		).squeeze(-2)
+			).squeeze(-2)
 
-    		# Batch Integrated Negative Posterior Variance
-    		# mc_points are used for MC-integrating the posterior variance.
+			# Batch Integrated Negative Posterior Variance
+			# mc_points are used for MC-integrating the posterior variance.
 			acqf = qNegIntegratedPosteriorVariance(
-        		    model=gp,
-            		mc_points=qmc_samples
+					model=gp,
+					mc_points=qmc_samples
 					)
 		elif self.acquisition == 'PSTD':
 			# Single-outcome posterior standard deviation for active learning
 			acqf = PosteriorStandardDeviation(gp)
 
-    	# Optimize the acquisition function
+		# Optimize the acquisition function
 		train_X_add, acq_value = optimize_acqf(
-        	acqf, bounds=train_X_bounds, q=self.q_batch,
+			acqf, bounds=train_X_bounds, q=self.q_batch,
 			num_restarts=self.N_restarts, raw_samples=self.raw_samples,
 			# options={"method": "L-BFGS-B"}
 			# options={"batch_limit": 10, "init_batch_limit": 512}
-        	)
+			)
 		return train_X_add

@@ -46,7 +46,7 @@ col_header = [r'$x_1$', r'$x_2$', r'$x_3$', r'$x_4$', r'$x_5$']
 N_inputs = len(col_header)
 Xlimits = np.tile([0., 1.], (N_inputs, 1))
 train_X_bounds = torch.from_numpy(
-    np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
+	np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
 
 # Latin-Hypercube sampling
 sampler = LHS(xlimits=Xlimits)
@@ -78,7 +78,7 @@ print(r"Predictivity coefficient Q2: {:.3f}".format(Q2))
 # --------------------------------------------------------------------------- #
 N_Xi = 1000
 var_y_sobol, S1st_pred = SobolGP.compute_S1st_pred(
-    train_X, train_y, train_X_bounds, test_X, N_Xi)
+	train_X, train_y, train_X_bounds, test_X, N_Xi)
 
 print(r"First-order Sobol' indices are:")
 print(S1st_pred)
@@ -109,12 +109,12 @@ plt.close()
 # --------------------------------------------------------------------------- #
 N_train_X = 512
 col_header = [
-    r'$x_1$', r'$x_2$', r'$x_3$', r'$x_4$', r'$x_5$',
-    r'$x_6$', r'$x_7$', r'$x_8$', r'$x_9$', r'$x_{10}$']
+	r'$x_1$', r'$x_2$', r'$x_3$', r'$x_4$', r'$x_5$',
+	r'$x_6$', r'$x_7$', r'$x_8$', r'$x_9$', r'$x_{10}$']
 N_inputs = len(col_header)
 Xlimits = np.tile([0., 1.], (N_inputs, 1))
 train_X_bounds = torch.from_numpy(
-    np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
+	np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
 
 # Latin-Hypercube sampling
 sampler = LHS(xlimits=Xlimits)
@@ -143,9 +143,9 @@ shap_approx = np.empty((N_montecarlo, N_inputs))
 for idx in range(N_montecarlo):
 	print(r"Iterattion: {} / {}".format(idx+1, N_montecarlo))
 	var_y_approx[idx], shap_approx[idx, :] = ShapleyGP.compute_shapley_gp(
-        train_X, train_y, train_X_bounds,
-        N_eval_var_y=10000, N_inner=3, N_outer=1,
-        exact_or_approx='approx', max_counter=3000, norm_flag=False)
+		train_X, train_y, train_X_bounds,
+		N_eval_var_y=10000, N_inner=3, N_outer=1,
+		exact_or_approx='approx', max_counter=3000, norm_flag=False)
 
 var_y_approx_mean = np.mean(var_y_approx)
 shap_approx_df = pd.DataFrame(shap_approx)

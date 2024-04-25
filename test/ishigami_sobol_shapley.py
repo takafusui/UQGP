@@ -45,7 +45,7 @@ col_header = [r'$x_1$', r'$x_2$', r'$x_3$']
 N_inputs = len(col_header)
 Xlimits = np.tile([-np.pi, np.pi], (N_inputs, 1))
 train_X_bounds = torch.from_numpy(
-    np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
+	np.tile(Xlimits[0].reshape(2, 1), (1, N_inputs)))
 
 # Latin-Hypercube sampling
 sampler = LHS(xlimits=Xlimits)
@@ -77,7 +77,7 @@ print(r"First-order Sobol' indices using prediction only")
 # --------------------------------------------------------------------------- #
 N_Xi = 1000
 var_y, S1st_pred = SobolGP.compute_S1st_pred(
-    train_X, train_y, train_X_bounds, test_X, N_inner=N_Xi, norm_flag=True)
+	train_X, train_y, train_X_bounds, test_X, N_inner=N_Xi, norm_flag=True)
 
 print(r"First-order Sobol' indices are:")
 print(S1st_pred)
@@ -105,14 +105,14 @@ plt.close()
 print(r"Shapley values using the exact and approx methods")
 # --------------------------------------------------------------------------- #
 var_pred_eval_X_mean_exact, shap_exact = ShapleyGP.compute_shapley_gp(
-    train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_inner=3, N_outer=3000,
-    exact_or_approx='exact', max_counter=None, norm_flag=False)
+	train_X, train_y, train_X_bounds,
+	N_eval_var_y=10000, N_inner=3, N_outer=3000,
+	exact_or_approx='exact', max_counter=None, norm_flag=False)
 
 var_pred_eval_X_mean_approx, shap_approx = ShapleyGP.compute_shapley_gp(
-    train_X, train_y, train_X_bounds,
-    N_eval_var_y=10000, N_inner=3, N_outer=1,
-    exact_or_approx='approx', max_counter=3000, norm_flag=False)
+	train_X, train_y, train_X_bounds,
+	N_eval_var_y=10000, N_inner=3, N_outer=1,
+	exact_or_approx='approx', max_counter=3000, norm_flag=False)
 
 # Plot
 fig, ax = plt.subplots(figsize=fsize)
