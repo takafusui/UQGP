@@ -243,7 +243,86 @@ export USE_CONFIG_FROM_RUN_DIR=outputs/path_to_deqn_data && python uq_gp_err.py 
 
 ### Bayesian active learning
 
-Under construction...
+`test/XYZ.py` script computes the mean-squared-error $\epsilon$ for several test functions with three different criteria, namely:
+
+* LHS: Latin-Hypercube sampling, space-filling technique
+* PSTD: Posterior standard deviation acquisition function, Bayesian active learning, pure exploration
+* NIPV: Negative integrated posterior variance acquisition function, Bayesian active learning, pure exploration
+
+#### Hartmann 6-dimensional function
+
+```math
+f\left( x \right) = - \sum_{i=1}^{4} \alpha_{i} \exp\left( - \sum_{j=1}^{6} A_{ij} \left( x_{j} - P_{ij} \right)^{2} \right)
+```
+where,
+```math
+\alpha = \left( 1.0, 1.2, 3.0, 3.2 \right)^{T}, \\
+A = \begin{bmatrix}
+10, 3, 17, 3.5, 1.7, 8 \\
+0.05, 10, 17, 0.1, 8, 14 \\
+3, 3.5, 1.7, 10, 17, 8 \\
+17, 8, 0.05, 10, 0.1, 14
+\end{bmatrix}, \\
+P = 10^{-4} \begin{bmatrix}
+1312, 1696, 5569, 124, 8283, 5886 \\
+2329, 4135, 8307, 3736, 1004, 9991 \\
+2348, 1451, 3522, 2883, 3047, 6650 \\
+4047, 8828, 8732, 5743, 1091, 381
+\end{bmatrix}.
+```
+We evaluate this function on the hypercube $x_{i} \in \left[ 0, 1 \right]$ for all $i=1, \cdots, 6$. More details are found [here](https://www.sfu.ca/~ssurjano/hart6.html) and references therein.
+
+<p>
+<img src="test/figs/hartmann6_activelearning.png" width=75%>
+</p>
+
+#### Shekel 4-dimensional test function
+```math
+f\left( x \right) = - \sum_{i=1}^{m}\left( \sum_{j=1}^{4} \left( x_{j} - c_{j,i}\right)^{2} + \beta_{i} \right)^{-1}
+```
+where,
+```math
+m=10, \\
+\beta = \frac{1}{10}\left( 1, 2, 2, 4, 4, 6, 3, 7, 5, 5 \right)^{T}, \\
+C = \begin{bmatrix}
+4., 1., 8., 6., 3., 2., 5., 8., 6., 7. \\
+4., 1., 8., 6., 7., 9., 3., 1., 2., 3.6 \\
+4., 1., 8., 6., 3., 2., 5., 8., 6., 7. \\
+4., 1., 8., 6., 7., 9., 3., 1., 2., 3.6 \\
+\end{bmatrix}
+```
+We evaluate this function on the hypercube $x_{i} \in \left[ 0, 10 \right]$ for all $i=1, \cdots, 4$. More details are found [here](https://www.sfu.ca/~ssurjano/shekel.html) and references therein.
+
+<p>
+<img src="test/figs/shekel4_activelearning.png" width=75%>
+</p>
+
+#### Powell 4-dimensional test function
+```math
+f\left( x \right) = \sum_{i=1}^{d/4}\left\{ \left( x_{4i-3} + 10x_{4i-2}\right)^{2} + 5\left( x_{4i-1} - x_{4i}\right)^{2} + \left( x_{4i-2} - 2x_{4i-1}\right)^{4} + 10\left( x_{4i-3} - x_{4i} \right)^{4} \right\}
+```
+We evaluate this function on the hypercube $x_{i} \in \left[ -4, 5 \right]$ for all $i=1, \cdots, 4$. More details are found [here](https://www.sfu.ca/~ssurjano/powell.html) and references therein.
+
+<p>
+<img src="test/figs/powell4_activelearning.png" width=75%>
+</p>
+
+#### Cosine Mixture 8-dimensional test function
+
+```math
+f\left( x \right) = 0.1 \sum_{i=1}^{8}\cos\left( 5\pi x_{i}\right) - \sum_{i=1}^{n}x_{i}^{2}
+```
+We evaluate this function on the hypercube $x_{i} \in \left[ -1, 1 \right]$ for all $i=1, \cdots, 8$. More details are found in [Breiman and Cutler (1993)](https://link.springer.com/article/10.1007/BF01581266).
+
+<p>
+<img src="test/figs/cosine8_activelearning.png" width=75%>
+</p>
+
+#### Some general observations:
+
+* LHS shows a noisy convergence trend in the error metrics.
+* Bayesian active learning (PSTD and NIPV) enables fairly stable convergence trends in the mean-squared-error $\epsilon$.
+* Generally speaking, NIPV shows a better performance than PSTD.
 
 ### Tail learning
 
